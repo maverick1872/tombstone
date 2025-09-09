@@ -9,11 +9,11 @@
     "dist/*"
   ],
   "scripts": {
-    "test": "",
+    "test": "vitest",
     "lint": "biome lint --write",
     "format": "biome format --write",
     "prepack": "npm run build",
-    "build": "tsc"
+    "build": "tsc && tsc-alias"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,9 @@
     "@biomejs/biome": "^2.2.2",
     "@opentelemetry/api": "^1.9.0",
     "@types/node": "^24.3.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2",
+    "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
   },
   "peerDependencies": {

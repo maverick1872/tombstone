@@ -2,15 +2,12 @@
   "compilerOptions": {
     "rootDir": ".",
     "outDir": "./dist",
-    "baseUrl": ".",
     "module": "nodenext",
     "lib": [],
     "types": ["node"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
     "skipLibCheck": true,
     "moduleDetection": "force",
     "verbatimModuleSyntax": false,
@@ -27,8 +24,9 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@src": ["src/*"],
-      "@tests/*": ["tests/*"]
-    }
-  }
+      "@src": ["./src/*"],
+      "@tests/*": ["./tests/*"]
+    },
+  },
+  "include": ["src/*"]
 }
