@@ -23,7 +23,9 @@
     "deprecation",
     "observability",
     "monitoring",
-    "maintenance"
+    "maintenance",
+    "opentelemetry",
+    "telemetry"
   ],
   "author": "",
   "license": "MIT",

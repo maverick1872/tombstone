@@ -1,1 +1,15 @@
-export type MethodDecorator<T> = (originalMethod: T, context: unknown) => void;
+export type LegacyClassDecorator = <TFunction extends NewableFunction>(
+  target: TFunction,
+) => TFunction | undefined;
+
+// biome-ignore lint/suspicious/noExplicitAny: because i'm lazy
+export type LegacyMethodDecorator = <T>(
+  target: Record<string, unknown>,
+  propertyKey: string | symbol,
+  descriptor: TypedPropertyDescriptor<T>,
+) => TypedPropertyDescriptor<T> | undefined;
+
+export type LegacyPropertyDecorator = (
+  target: Record<string, unknown>,
+  propertyKey: string | symbol,
+) => void;

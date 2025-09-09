@@ -1,9 +1,5 @@
 // import { type Meter, metrics } from "@opentelemetry/api";
-import type {
-  Constructable,
-  DeprecationConfig,
-  Logger,
-} from "./tombstone.types.js";
+import type { DeprecationConfig, Logger } from "./tombstone.types.js";
 
 /**
  * A class providing factory methods to create deprecation decorators
@@ -26,21 +22,34 @@ export class Tombstone {
     } = {},
   ) {
     this.#logger = configuration.logger ?? console;
+    this.#logger.log("Tombstone initialized");
     // this.#meter =
     //   configuration.meter || metrics.getMeter("@maverick1872/tombstone");
   }
 
-  public DeprecateClass<T extends Constructable>() {
-    return (_constructor: T): T => {
-      this.#logger.log("Class created:", _constructor.name);
-      return _constructor;
+  public DeprecateClass(): ClassDecorator {
+    const decorator: ClassDecorator = (target) => {
+      this.#logger.log("Class created:", target.name);
+      return target;
     };
+
+    return decorator.bind(this);
   }
 
-  public DeprecatedMethod() {
-    return (_target: unknown, _context: unknown) => {
-      this.#logger.log("Method called:", _context);
-      return _target;
+  public DeprecateMethod(): MethodDecorator {
+    const decorator: MethodDecorator = (_target, propertyKey, descriptor) => {
+      this.#logger.log("Method called:", propertyKey);
+      return descriptor;
     };
+
+    return decorator.bind(this);
+  }
+
+  public DeprecateProperty(): PropertyDecorator {
+    const decorator: PropertyDecorator = (target, propertyKey) => {
+      this.#logger.log("Method called:", propertyKey);
+      return target;
+    };
+    return decorator.bind(this);
   }
 }
