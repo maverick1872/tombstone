@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
     "rootDir": ".",
+    "baseUrl": ".",
     "outDir": "./dist",
     "module": "nodenext",
     "lib": [],
-    "types": ["node"],
+    "types": ["node", "vitest"],
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
@@ -24,9 +25,9 @@
     "noPropertyAccessFromIndexSignature": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@src": ["./src/*"],
+      "@src/*": ["./src/*"],
       "@tests/*": ["./tests/*"]
     },
   },
-  "include": ["src/*"]
+  "include": ["src/**/*", "tests/**/*"]
 }

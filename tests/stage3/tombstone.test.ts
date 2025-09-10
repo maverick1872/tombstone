@@ -1,5 +1,5 @@
 import { expect, test, describe, beforeAll, beforeEach } from "vitest";
-import { Tombstone } from "../../src/tombstone.ts";
+import { Tombstone } from "@src/tombstone";
 
 let logMessages: Record<string, unknown>[] = [];
 let warnMessages: Record<string, unknown>[] = [];
