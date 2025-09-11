@@ -37,6 +37,7 @@ type TombstoneConfiguration = {
 export class Tombstone {
   // #meter: Meter;
   #logger: Logger;
+  #decoratorVersion: DecoratorVersion;
 
   /**
    * Creates a new Tombstone instance with optional custom logger and meter
@@ -45,13 +46,15 @@ export class Tombstone {
    */
   constructor(configuration: TombstoneConfiguration = {}) {
     this.#logger = configuration.logger ?? console;
+    this.#decoratorVersion = configuration.decoratorVersion ?? 'standard';
     this.#logger.log('Tombstone initialized');
     // this.#meter =
     //   configuration.meter || metrics.getMeter("@maverick1872/tombstone");
   }
 
   public Deprecate() {
-    return this.#constructStandardDecorator();
+    if (this.#decoratorVersion === 'standard')
+      return this.#constructStandardDecorator();
   }
 
   #constructStandardDecorator() {
