@@ -16,35 +16,6 @@ export interface DeprecatedOptions {
 }
 
 /**
- * Configuration options for deprecation settings
- */
-export interface DeprecationConfig {
-  /**
-   * Enable or disable all deprecation warnings globally
-   */
-  enableWarnings: boolean;
-
-  /**
-   * Enable or disable error elevation for expired deprecations
-   */
-  enableErrorElevation: boolean;
-
-  /**
-   * Enable or disable metrics collection for deprecation tracking
-   */
-  enableMetrics: boolean;
-}
-
-/**
- * Default configuration for the deprecation system
- */
-export const DEFAULT_CONFIG: DeprecationConfig = {
-  enableWarnings: true,
-  enableErrorElevation: true,
-  enableMetrics: true,
-};
-
-/**
  * Logger interface that must be implemented by custom loggers
  */
 export type Logger = Console;

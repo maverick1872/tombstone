@@ -1,12 +1,34 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: decorators are inherently any
 
-// import { type Meter, metrics } from "@opentelemetry/api";
-import type { DeprecationConfig, Logger } from './tombstone.types.js';
+import { type Meter, metrics } from '@opentelemetry/api';
+import type { Logger } from './tombstone.types.js';
 
 type DecoratorContext =
   | ClassDecoratorContext
   | ClassMethodDecoratorContext
   | ClassMemberDecoratorContext;
+
+type DecoratorVersion = 'standard' | 'experimental';
+
+type TombstoneConfiguration = {
+  decoratorVersion?: DecoratorVersion;
+  logger?: Logger;
+  meter?: Meter;
+  /**
+   * Enable or disable all deprecation warnings globally
+   */
+  enableWarnings?: boolean;
+
+  /**
+   * Enable or disable error elevation for expired deprecations
+   */
+  enableErrorElevation?: boolean;
+
+  /**
+   * Enable or disable metrics collection for deprecation tracking
+   */
+  enableMetrics?: boolean;
+};
 
 /**
  * A class providing factory methods to create deprecation decorators
@@ -21,13 +43,7 @@ export class Tombstone {
    *
    * @param configuration Configuration options for the Tombstone instance
    */
-  constructor(
-    configuration: {
-      logger?: Logger;
-      meter?: import('@opentelemetry/api').Meter;
-      config?: Partial<DeprecationConfig>;
-    } = {},
-  ) {
+  constructor(configuration: TombstoneConfiguration = {}) {
     this.#logger = configuration.logger ?? console;
     this.#logger.log('Tombstone initialized');
     // this.#meter =
@@ -35,7 +51,11 @@ export class Tombstone {
   }
 
   public Deprecate() {
-    const decorator = (target: any, context?: DecoratorContext): any => {
+    return this.#constructStandardDecorator();
+  }
+
+  #constructStandardDecorator() {
+    return (target: any, context?: DecoratorContext): any => {
       if (this.#isClassDecorator(context)) {
         return this.#deprecateClass(target, context);
       }
@@ -65,8 +85,6 @@ export class Tombstone {
         context,
       );
     };
-
-    return decorator;
   }
 
   #isMethodDecorator(
