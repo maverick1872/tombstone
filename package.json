@@ -1,8 +1,12 @@
 {
   "name": "@maverick18722/tombstone",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Utility to help assist in managing code that is slated for deprecation",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -13,8 +17,8 @@
     "test:watch": "vitest",
     "lint": "biome lint --write",
     "format": "biome format --write",
-    "prepack": "tsc --project tsconfig.build.json",
-    "build": "tsc"
+    "prepack": "rm -rf dist/ && tsc --project tsconfig.build.json",
+    "build": "rm -rf dist/ && tsc"
   },
   "repository": {
     "type": "git",
