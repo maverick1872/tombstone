@@ -1,5 +1,5 @@
-import { expect, test, describe, beforeAll, beforeEach } from "vitest";
-import { Tombstone } from "@src/tombstone";
+import { beforeAll, beforeEach, describe, expect, test } from 'vitest';
+import { Tombstone } from '../../src/tombstone.js';
 
 let logMessages: Record<string, unknown>[] = [];
 let warnMessages: Record<string, unknown>[] = [];
@@ -11,7 +11,6 @@ const fakeLogger: Partial<Console> = {
 };
 
 const tombstone = new Tombstone({ logger: fakeLogger as Console });
-// const tombstone = new Tombstone();
 
 @tombstone.Deprecate()
 class DeprecatedTestClass {}
@@ -19,13 +18,13 @@ class DeprecatedTestClass {}
 class ExtendedClass extends DeprecatedTestClass {}
 
 class TestClass {
-  #internalProperty: string = "hard private";
+  #internalProperty: string = 'hard private';
 
   @tombstone.Deprecate()
   testMethod() {}
 
   @tombstone.Deprecate()
-  accessor testProperty = "original value";
+  accessor testProperty = 'original value';
 
   @tombstone.Deprecate()
   get internalProperty() {
@@ -38,7 +37,7 @@ class TestClass {
   }
 }
 
-describe("Tombstone", () => {
+describe('Tombstone', () => {
   let testClass: TestClass;
   beforeAll(() => {
     testClass = new TestClass();
@@ -50,7 +49,7 @@ describe("Tombstone", () => {
     errorMessages = [];
   });
 
-  test("Constructing the deprecated class should log a deprecation warning", () => {
+  test('Constructing the deprecated class should log a deprecation warning', () => {
     new DeprecatedTestClass();
 
     expect(warnMessages[0]).toStrictEqual({
@@ -58,17 +57,17 @@ describe("Tombstone", () => {
     });
   });
 
-  test("Constructing a class that extends a deprecated class should log a deprecation warning", () => {
+  test('Constructing a class that extends a deprecated class should log a deprecation warning', () => {
     new ExtendedClass();
 
     expect(warnMessages[0]).toStrictEqual({
       args: [
-        "Subclass (ExtendedClass) of deprecated class (DeprecatedTestClass) was instantiated.",
+        'Subclass (ExtendedClass) of deprecated class (DeprecatedTestClass) was instantiated.',
       ],
     });
   });
 
-  test("Invoking the deprecated method should log a deprecation warning", () => {
+  test('Invoking the deprecated method should log a deprecation warning', () => {
     testClass.testMethod();
 
     expect(warnMessages[0]).toStrictEqual({
@@ -76,7 +75,7 @@ describe("Tombstone", () => {
     });
   });
 
-  test("Accessing the deprecated accessor property should log a deprecation warning", () => {
+  test('Accessing the deprecated accessor property should log a deprecation warning', () => {
     testClass.testProperty;
 
     expect(warnMessages[0]).toStrictEqual({
@@ -84,23 +83,23 @@ describe("Tombstone", () => {
     });
   });
 
-  test("Setting the deprecated accessor property should log a deprecation warning", () => {
-    testClass.testProperty = "new value";
+  test('Setting the deprecated accessor property should log a deprecation warning', () => {
+    testClass.testProperty = 'new value';
 
     expect(warnMessages[0]).toStrictEqual({
       args: ["Deprecated property 'testProperty' was set"],
     });
   });
 
-  test("Invoking the deprecated getter method should log a deprecation warning", () => {
-    expect(testClass.internalProperty === "hard private");
+  test('Invoking the deprecated getter method should log a deprecation warning', () => {
+    expect(testClass.internalProperty === 'hard private');
     expect(warnMessages[0]).toStrictEqual({
       args: ["Deprecated property 'internalProperty' was accessed"],
     });
   });
 
-  test("Invoking the deprecated setter method should log a deprecation warning", () => {
-    testClass.internalProperty = "new value";
+  test('Invoking the deprecated setter method should log a deprecation warning', () => {
+    testClass.internalProperty = 'new value';
 
     expect(warnMessages[0]).toStrictEqual({
       args: ["Deprecated property 'internalProperty' was set"],

@@ -1,7 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: decorators are inherently any
 
 // import { type Meter, metrics } from "@opentelemetry/api";
-import type { DeprecationConfig, Logger } from "./tombstone.types.js";
+import type { DeprecationConfig, Logger } from './tombstone.types.js';
 
 type DecoratorContext =
   | ClassDecoratorContext
@@ -24,12 +24,12 @@ export class Tombstone {
   constructor(
     configuration: {
       logger?: Logger;
-      meter?: import("@opentelemetry/api").Meter;
+      meter?: import('@opentelemetry/api').Meter;
       config?: Partial<DeprecationConfig>;
     } = {},
   ) {
     this.#logger = configuration.logger ?? console;
-    this.#logger.log("Tombstone initialized");
+    this.#logger.log('Tombstone initialized');
     // this.#meter =
     //   configuration.meter || metrics.getMeter("@maverick1872/tombstone");
   }
@@ -61,7 +61,7 @@ export class Tombstone {
       }
 
       this.#logger.error(
-        "Deprecated decorator was applied on an unsupported context",
+        'Deprecated decorator was applied on an unsupported context',
         context,
       );
     };
@@ -72,37 +72,37 @@ export class Tombstone {
   #isMethodDecorator(
     context: DecoratorContext | undefined,
   ): context is ClassMethodDecoratorContext {
-    return !!context && context.kind === "method";
+    return !!context && context.kind === 'method';
   }
 
   #isFieldDecorator(
     context: DecoratorContext | undefined,
   ): context is ClassFieldDecoratorContext {
-    return !!context && context.kind === "field";
+    return !!context && context.kind === 'field';
   }
 
   #isAccessorDecorator(
     context: DecoratorContext | undefined,
   ): context is ClassAccessorDecoratorContext {
-    return !!context && context.kind === "accessor";
+    return !!context && context.kind === 'accessor';
   }
 
   #isSetterDecorator(
     context: DecoratorContext | undefined,
   ): context is ClassSetterDecoratorContext {
-    return !!context && context.kind === "setter";
+    return !!context && context.kind === 'setter';
   }
 
   #isGetterDecorator(
     context: DecoratorContext | undefined,
   ): context is ClassGetterDecoratorContext {
-    return !!context && context.kind === "getter";
+    return !!context && context.kind === 'getter';
   }
 
   #isClassDecorator(
     context: DecoratorContext | undefined,
   ): context is ClassDecoratorContext {
-    return !!context && context.kind === "class";
+    return !!context && context.kind === 'class';
   }
 
   #deprecateClass(target: any, _context?: ClassDecoratorContext) {
@@ -113,7 +113,7 @@ export class Tombstone {
         super(...args);
         let deprecationMessage = `Deprecated class of '${target.name}' was instantiated.`;
         if (
-          this.constructor.name !== "" &&
+          this.constructor.name !== '' &&
           target.name !== this.constructor.name
         ) {
           deprecationMessage = `Subclass (${this.constructor.name}) of deprecated class (${target.name}) was instantiated.`;

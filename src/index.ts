@@ -1,1 +1,1 @@
-export * from "./tombstone.ts";
+export * from './tombstone.ts';
