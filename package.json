@@ -1,5 +1,5 @@
 {
-  "name": "@maverick1872/tombstone",
+  "name": "@maverick18722/tombstone",
   "version": "0.1.0",
   "type": "module",
   "description": "Utility to help assist in managing code that is slated for deprecation",
