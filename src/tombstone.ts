@@ -60,27 +60,27 @@ export class Tombstone {
   #constructStandardDecorator() {
     return (target: any, context?: DecoratorContext): any => {
       if (this.#isClassDecorator(context)) {
-        return this.#deprecateClass(target, context);
+        return this.#deprecateClassDecorator(target, context);
       }
 
       if (this.#isMethodDecorator(context)) {
-        return this.#deprecateMethod(target, context);
+        return this.#deprecateMethodDecorator(target, context);
       }
 
       if (this.#isFieldDecorator(context)) {
-        return this.#deprecateFieldInitializer(target, context);
+        return this.#deprecateFieldInitializerDecorator(target, context);
       }
 
       if (this.#isAccessorDecorator(context)) {
-        return this.#deprecateAccessor(target, context);
+        return this.#deprecateAccessorDecorator(target, context);
       }
 
       if (this.#isSetterDecorator(context)) {
-        return this.#deprecateSetter(target, context);
+        return this.#deprecateSetterDecorator(target, context);
       }
 
       if (this.#isGetterDecorator(context)) {
-        return this.#deprecateGetter(target, context);
+        return this.#deprecateGetterDecorator(target, context);
       }
 
       this.#logger.error(
@@ -126,7 +126,7 @@ export class Tombstone {
     return !!context && context.kind === 'class';
   }
 
-  #deprecateClass(target: any, _context?: ClassDecoratorContext) {
+  #deprecateClassDecorator(target: any, _context?: ClassDecoratorContext) {
     const logger = this.#logger;
 
     return class extends target {
@@ -144,7 +144,10 @@ export class Tombstone {
     };
   }
 
-  #deprecateMethod(_target: any, context: ClassMethodDecoratorContext) {
+  #deprecateMethodDecorator(
+    _target: any,
+    context: ClassMethodDecoratorContext,
+  ) {
     const logger = this.#logger;
     return function (this: unknown, ...args: unknown[]) {
       logger.warn(`Deprecated method '${context.name.toString()}' was invoked`);
@@ -152,7 +155,7 @@ export class Tombstone {
     };
   }
 
-  #deprecateAccessor(
+  #deprecateAccessorDecorator(
     target: ClassAccessorDecoratorTarget<unknown, unknown>,
     context: ClassAccessorDecoratorContext,
   ) {
@@ -174,7 +177,7 @@ export class Tombstone {
     };
   }
 
-  #deprecateSetter(target: any, context: ClassSetterDecoratorContext) {
+  #deprecateSetterDecorator(target: any, context: ClassSetterDecoratorContext) {
     const logger = this.#logger;
     return function (this: unknown, ...args: unknown[]) {
       logger.warn(`Deprecated property '${context.name.toString()}' was set`);
@@ -182,7 +185,7 @@ export class Tombstone {
     };
   }
 
-  #deprecateGetter(target: any, context: ClassGetterDecoratorContext) {
+  #deprecateGetterDecorator(target: any, context: ClassGetterDecoratorContext) {
     const logger = this.#logger;
     return function (this: unknown, ...args: unknown[]) {
       logger.warn(
@@ -192,7 +195,7 @@ export class Tombstone {
     };
   }
 
-  #deprecateFieldInitializer(
+  #deprecateFieldInitializerDecorator(
     _target: undefined,
     context: ClassFieldDecoratorContext,
   ) {
