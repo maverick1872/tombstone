@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "moduleDetection": "force",
     "verbatimModuleSyntax": false,
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "rewriteRelativeImportExtensions": true,
     "strict": true,
@@ -23,11 +24,7 @@
     // "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedSideEffectImports": true,
-    "paths": {
-      "@src/*": ["./src/*"],
-      "@tests/*": ["./tests/*"]
-    },
+    "noUncheckedSideEffectImports": true
   },
   "include": ["src/**/*", "tests/**/*"]
 }
