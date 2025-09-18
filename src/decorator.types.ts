@@ -1,14 +1,19 @@
-export type LegacyClassDecorator = <TFunction extends NewableFunction>(
+export type ExpirmentalDecorators =
+  | ExperimentalClassDecorator
+  | ExperimentalMethodDecorator
+  | ExperimentalPropertyDecorator;
+
+export type ExperimentalClassDecorator = <TFunction extends NewableFunction>(
   target: TFunction,
 ) => TFunction | undefined;
 
-export type LegacyMethodDecorator = <T>(
+export type ExperimentalMethodDecorator = <T>(
   target: Record<string, unknown>,
   propertyKey: string | symbol,
   descriptor: TypedPropertyDescriptor<T>,
 ) => TypedPropertyDescriptor<T> | undefined;
 
-export type LegacyPropertyDecorator = (
+export type ExperimentalPropertyDecorator = (
   target: Record<string, unknown>,
   propertyKey: string | symbol,
 ) => void;
