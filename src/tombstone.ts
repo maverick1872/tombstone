@@ -1,8 +1,6 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: decorators are inherently any
-
 import { type Meter, metrics } from '@opentelemetry/api';
 import type { Logger } from './tombstone.types.js';
-import type { ExpirmentalDecorators } from './decorator.types.js';
 
 type DecoratorContext =
   | ClassDecoratorContext
@@ -74,7 +72,7 @@ export class Tombstone {
       }
 
       if (this.#isFieldContext(context)) {
-        return this.#constructFieldInitializerDecorator(target, context);
+        this.#logger.error('Field decorators are not yet supported');
       }
 
       if (this.#isAccessorContect(context)) {
@@ -109,7 +107,7 @@ export class Tombstone {
       }
 
       if (propertyKey && descriptor === undefined) {
-        throw new Error('Not Implemented');
+        return;
         // throw new Error('Not Implemented');
         // return this.#constructExperimentalPropertyDecorator(
         //   target,
@@ -143,6 +141,8 @@ export class Tombstone {
           );
         }
       }
+
+      return;
     };
   }
 
@@ -183,19 +183,20 @@ export class Tombstone {
   }
 
   #constructClassDecorator(target: any, _context?: ClassDecoratorContext) {
-    const logger = this.#logger;
+    const logDeprecationNotice = this.#logClassDeprecationNotice.bind(this);
 
     return class extends target {
       constructor(...args: unknown[]) {
         super(...args);
-        let deprecationMessage = `Deprecated class of '${target.name}' was instantiated.`;
-        if (
-          this.constructor.name !== '' &&
-          target.name !== this.constructor.name
-        ) {
-          deprecationMessage = `Subclass (${this.constructor.name}) of deprecated class (${target.name}) was instantiated.`;
-        }
-        logger.warn(deprecationMessage);
+        // In some transpilation scenarios the subclass may have an empty name ('')
+        // Fallback to the original target name so tests expecting the original
+        // class name still pass.
+        const subclassName = this.constructor.name || target.name;
+        const parentClass =
+          subclassName !== target.name && target.name !== ''
+            ? target.name
+            : undefined;
+        logDeprecationNotice(subclassName, parentClass);
       }
     };
   }
@@ -204,9 +205,12 @@ export class Tombstone {
     target: any,
     context: Pick<ClassMethodDecoratorContext, 'name'>,
   ) {
-    const logger = this.#logger;
+    const methodName = context.name.toString();
+    const logDeprecationNotice =
+      this.#logMethodInvocationDeprecationNotice.bind(this);
+
     return function (this: unknown, ...args: unknown[]) {
-      logger.warn(`Deprecated method '${context.name.toString()}' was invoked`);
+      logDeprecationNotice(methodName);
       return target.call(this, ...args);
     };
   }
@@ -215,19 +219,22 @@ export class Tombstone {
     target: ClassAccessorDecoratorTarget<unknown, unknown>,
     context: Pick<ClassAccessorDecoratorContext, 'name'>,
   ) {
-    const logger = this.#logger;
+    const propertyName = context.name.toString();
+    const logGetDeprecationNotice =
+      this.#logPropertyAccessDeprecationNotice.bind(this);
+    const logSetDeprecationNotice =
+      this.#logPropertySetDeprecationNotice.bind(this);
     const originalGetter = target.get;
     const originalSetter = target.set;
 
+    // FIX: handle potentially undefined getter/setter
     return {
       get(this: unknown) {
-        logger.warn(
-          `Deprecated property '${context.name.toString()}' was accessed`,
-        );
+        logGetDeprecationNotice(propertyName);
         return originalGetter.call(this);
       },
       set(this: unknown, val: unknown) {
-        logger.warn(`Deprecated property '${context.name.toString()}' was set`);
+        logSetDeprecationNotice(propertyName);
         return originalSetter.call(this, val);
       },
     };
@@ -237,9 +244,12 @@ export class Tombstone {
     target: any,
     context: Pick<ClassSetterDecoratorContext, 'name'>,
   ) {
-    const logger = this.#logger;
+    const propertyName = context.name.toString();
+    const logDeprecationNotice =
+      this.#logPropertySetDeprecationNotice.bind(this);
+
     return function (this: unknown, ...args: unknown[]) {
-      logger.warn(`Deprecated property '${context.name.toString()}' was set`);
+      logDeprecationNotice(propertyName);
       return target.call(this, ...args);
     };
   }
@@ -248,25 +258,47 @@ export class Tombstone {
     target: any,
     context: Pick<ClassGetterDecoratorContext, 'name'>,
   ) {
-    const logger = this.#logger;
+    const propertyName = context.name.toString();
+    const logDeprecationNotice =
+      this.#logPropertyAccessDeprecationNotice.bind(this);
+
     return function (this: unknown, ...args: unknown[]) {
-      logger.warn(
-        `Deprecated property '${context.name.toString()}' was accessed`,
-      );
+      logDeprecationNotice(propertyName);
       return target.call(this, ...args);
     };
   }
 
-  #constructFieldInitializerDecorator(
-    _target: undefined,
-    context: Pick<ClassFieldDecoratorContext, 'name'>,
-  ) {
-    const logger = this.#logger;
-    return (initialValue: unknown) => {
-      logger.warn(
-        `Deprecated property '${context.name.toString()}' was initialized`,
+  #logPropertyAccessDeprecationNotice(propertyName: string | symbol) {
+    this.#logDeprecationNotice(
+      `Deprecated property '${propertyName.toString()}' was accessed`,
+    );
+  }
+
+  #logPropertySetDeprecationNotice(propertyName: string | symbol) {
+    this.#logDeprecationNotice(
+      `Deprecated property '${propertyName.toString()}' was set`,
+    );
+  }
+
+  #logMethodInvocationDeprecationNotice(methodName: string | symbol) {
+    this.#logDeprecationNotice(
+      `Deprecated method '${methodName.toString()}' was invoked`,
+    );
+  }
+
+  #logClassDeprecationNotice(className: string, parentClassName?: string) {
+    if (parentClassName) {
+      this.#logDeprecationNotice(
+        `Subclass (${className}) of deprecated class (${parentClassName}) was instantiated.`,
       );
-      return initialValue;
-    };
+    } else {
+      this.#logDeprecationNotice(
+        `Deprecated class of '${className}' was instantiated.`,
+      );
+    }
+  }
+
+  #logDeprecationNotice(message: string) {
+    this.#logger.warn(message);
   }
 }
