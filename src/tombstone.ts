@@ -63,35 +63,30 @@ export class Tombstone {
 
   #constructStandardDecorator() {
     return (target: any, context?: DecoratorContext): any => {
-      if (this.#isClassContext(context)) {
-        return this.#constructClassDecorator(target, context);
+      switch (context?.kind) {
+        case 'class':
+          return this.#constructClassDecorator(target, context);
+        case 'method':
+          return this.#constructMethodDecorator(target, context);
+        case 'field':
+          this.#logger.error('Field decorators are not yet supported');
+          return () => {};
+        case 'accessor':
+          return this.#constructAccessorDecorator(target, context);
+        case 'setter':
+          return this.#constructSetterDecorator(target, context);
+        case 'getter':
+          return this.#constructGetterDecorator(target, context);
+        default: {
+          // Exhaustiveness guard for future context kinds
+          const _never: never = context as never;
+          this.#logger.error(
+            'Deprecated decorator encountered an unknown context kind',
+            _never,
+          );
+          return () => {};
+        }
       }
-
-      if (this.#isMethodContext(context)) {
-        return this.#constructMethodDecorator(target, context);
-      }
-
-      if (this.#isFieldContext(context)) {
-        this.#logger.error('Field decorators are not yet supported');
-      }
-
-      if (this.#isAccessorContect(context)) {
-        return this.#constructAccessorDecorator(target, context);
-      }
-
-      if (this.#isSetterContext(context)) {
-        return this.#constructSetterDecorator(target, context);
-      }
-
-      if (this.#isGetterContext(context)) {
-        return this.#constructGetterDecorator(target, context);
-      }
-
-      this.#logger.error(
-        'Deprecated decorator encountered an unsupported context',
-        context,
-      );
-      return () => {};
     };
   }
 
@@ -144,42 +139,6 @@ export class Tombstone {
 
       return;
     };
-  }
-
-  #isMethodContext(
-    context: DecoratorContext | undefined,
-  ): context is ClassMethodDecoratorContext {
-    return !!context && context.kind === 'method';
-  }
-
-  #isFieldContext(
-    context: DecoratorContext | undefined,
-  ): context is ClassFieldDecoratorContext {
-    return !!context && context.kind === 'field';
-  }
-
-  #isAccessorContect(
-    context: DecoratorContext | undefined,
-  ): context is ClassAccessorDecoratorContext {
-    return !!context && context.kind === 'accessor';
-  }
-
-  #isSetterContext(
-    context: DecoratorContext | undefined,
-  ): context is ClassSetterDecoratorContext {
-    return !!context && context.kind === 'setter';
-  }
-
-  #isGetterContext(
-    context: DecoratorContext | undefined,
-  ): context is ClassGetterDecoratorContext {
-    return !!context && context.kind === 'getter';
-  }
-
-  #isClassContext(
-    context: DecoratorContext | undefined,
-  ): context is ClassDecoratorContext {
-    return !!context && context.kind === 'class';
   }
 
   #constructClassDecorator(target: any, _context?: ClassDecoratorContext) {
