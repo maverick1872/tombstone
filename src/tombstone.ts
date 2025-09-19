@@ -1,6 +1,7 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: decorators are inherently any
-import { type Counter, type Meter, metrics } from '@opentelemetry/api';
+import { type Meter, metrics } from '@opentelemetry/api';
 import type { Logger, TombstoneOptions } from './tombstone.types.js';
+import type { DeprecationCounter } from './tombstone-metrics.types.js';
 
 type DecoratorContext =
   | ClassDecoratorContext
@@ -15,7 +16,7 @@ export class Tombstone {
   #config: TombstoneOptions;
   #logger: Logger;
   #meter: Meter;
-  #deprecationCounter: Counter;
+  #deprecationCounter: DeprecationCounter;
 
   /**
    * Creates a new Tombstone instance with optional custom logger and meter
@@ -80,7 +81,6 @@ export class Tombstone {
   }
 
   #constructExperimentalDecorator() {
-    const logger = this.#logger;
     return (
       target: any,
       propertyKey?: string | symbol,
@@ -91,12 +91,8 @@ export class Tombstone {
       }
 
       if (propertyKey && descriptor === undefined) {
+        this.#logger.error('Field decorators are not yet supported');
         return;
-        // throw new Error('Not Implemented');
-        // return this.#constructExperimentalPropertyDecorator(
-        //   target,
-        //   propertyKey,
-        // );
       }
 
       if (propertyKey && descriptor) {
@@ -104,12 +100,9 @@ export class Tombstone {
           const methodName = propertyKey;
           const method: any = descriptor.value;
 
-          descriptor.value = function (...args: unknown[]) {
-            logger.warn(
-              `Deprecated method '${methodName.toString()}' was invoked`,
-            );
-            return method.apply(this, args);
-          };
+          descriptor.value = this.#constructMethodDecorator(method, {
+            name: methodName,
+          } as ClassMethodDecoratorContext);
           return descriptor;
         }
 
@@ -131,7 +124,8 @@ export class Tombstone {
   }
 
   #constructClassDecorator(target: any, _context?: ClassDecoratorContext) {
-    const logDeprecationNotice = this.#logClassDeprecationNotice.bind(this);
+    const logDeprecationNotice =
+      this.#recordClassInstantiationDeprecationNotice.bind(this);
 
     return class extends target {
       constructor(...args: unknown[]) {
@@ -155,7 +149,7 @@ export class Tombstone {
   ) {
     const methodName = context.name.toString();
     const logDeprecationNotice =
-      this.#logMethodInvocationDeprecationNotice.bind(this);
+      this.#recordMethodInvocationDeprecationNotice.bind(this);
 
     return function (this: unknown, ...args: unknown[]) {
       logDeprecationNotice(methodName);
@@ -169,9 +163,9 @@ export class Tombstone {
   ) {
     const propertyName = context.name.toString();
     const logGetDeprecationNotice =
-      this.#logPropertyAccessDeprecationNotice.bind(this);
+      this.#recordPropertyReadDeprecationNotice.bind(this);
     const logSetDeprecationNotice =
-      this.#logPropertySetDeprecationNotice.bind(this);
+      this.#recordPropertyWriteDeprecationNotice.bind(this);
     const originalGetter = target.get;
     const originalSetter = target.set;
 
@@ -199,7 +193,7 @@ export class Tombstone {
   ) {
     const propertyName = context.name.toString();
     const logDeprecationNotice =
-      this.#logPropertySetDeprecationNotice.bind(this);
+      this.#recordPropertyWriteDeprecationNotice.bind(this);
 
     return function (this: unknown, ...args: unknown[]) {
       logDeprecationNotice(propertyName);
@@ -213,7 +207,7 @@ export class Tombstone {
   ) {
     const propertyName = context.name.toString();
     const logDeprecationNotice =
-      this.#logPropertyAccessDeprecationNotice.bind(this);
+      this.#recordPropertyReadDeprecationNotice.bind(this);
 
     return function (this: unknown, ...args: unknown[]) {
       logDeprecationNotice(propertyName);
@@ -221,26 +215,45 @@ export class Tombstone {
     };
   }
 
-  #logPropertyAccessDeprecationNotice(propertyName: string | symbol) {
+  #recordPropertyReadDeprecationNotice(propertyName: string | symbol) {
     this.#logDeprecationNotice(
       `Deprecated property '${propertyName.toString()}' was accessed`,
     );
+    this.#deprecationCounter.add(1, {
+      type: 'field',
+      member: propertyName.toString(),
+      expired: false,
+      operation: 'read',
+    });
   }
 
-  #logPropertySetDeprecationNotice(propertyName: string | symbol) {
+  #recordPropertyWriteDeprecationNotice(propertyName: string | symbol) {
     this.#logDeprecationNotice(
       `Deprecated property '${propertyName.toString()}' was set`,
     );
+    this.#deprecationCounter.add(1, {
+      type: 'field',
+      member: propertyName.toString(),
+      expired: false,
+      operation: 'write',
+    });
   }
 
-  #logMethodInvocationDeprecationNotice(methodName: string | symbol) {
+  #recordMethodInvocationDeprecationNotice(methodName: string | symbol) {
     this.#logDeprecationNotice(
       `Deprecated method '${methodName.toString()}' was invoked`,
     );
-    this.#deprecationCounter.add(1, { type: 'method' });
+    this.#deprecationCounter.add(1, {
+      type: 'method',
+      member: methodName.toString(),
+      expired: false,
+    });
   }
 
-  #logClassDeprecationNotice(className: string, parentClassName?: string) {
+  #recordClassInstantiationDeprecationNotice(
+    className: string,
+    parentClassName?: string,
+  ) {
     if (parentClassName) {
       this.#logDeprecationNotice(
         `Subclass (${className}) of deprecated class (${parentClassName}) was instantiated.`,
@@ -250,6 +263,11 @@ export class Tombstone {
         `Deprecated class of '${className}' was instantiated.`,
       );
     }
+    this.#deprecationCounter.add(1, {
+      type: 'class',
+      member: className,
+      expired: false,
+    });
   }
 
   #logDeprecationNotice(message: string) {
