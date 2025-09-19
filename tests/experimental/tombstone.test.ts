@@ -126,26 +126,20 @@ describe('Tombstone', () => {
     });
   });
 
-  test.fails(
-    'Decorating a getter-only property should not incur a side-effect of introducing a setter',
-    () => {
-      const updateReadOnlyValue = () => {
-        // @ts-expect-error Intentionally trying to set a value on a getter-only property
-        testClass.getterOnly = 'new value';
-      };
+  test('Decorating a getter-only property should not incur a side-effect of introducing a setter', () => {
+    const updateReadOnlyValue = () => {
+      // @ts-expect-error Intentionally trying to set a value on a getter-only property
+      testClass.getterOnly = 'new value';
+    };
 
-      expect(updateReadOnlyValue).toThrowErrorMatchingInlineSnapshot(
-        '[TypeError: Cannot set property getterOnly of #<TestClass> which has only a getter]',
-      );
-      expect(warnMessages).toHaveLength(0);
-    },
-  );
+    expect(updateReadOnlyValue).toThrowErrorMatchingInlineSnapshot(
+      '[TypeError: Cannot set property getterOnly of #<TestClass> which has only a getter]',
+    );
+    expect(warnMessages).toHaveLength(0);
+  });
 
-  test.fails(
-    'Decorating a setter-only property should not incur a side-effect of introducing a getter',
-    () => {
-      expect(testClass.setterOnly).toBeUndefined();
-      expect(warnMessages).toHaveLength(0);
-    },
-  );
+  test('Decorating a setter-only property should not incur a side-effect of introducing a getter', () => {
+    expect(testClass.setterOnly).toBeUndefined();
+    expect(warnMessages).toHaveLength(0);
+  });
 });

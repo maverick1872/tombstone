@@ -186,17 +186,22 @@ export class Tombstone {
     const originalGetter = target.get;
     const originalSetter = target.set;
 
-    // FIX: handle potentially undefined getter/setter
-    return {
-      get(this: unknown) {
+    const result: Partial<ClassAccessorDecoratorTarget<unknown, unknown>> = {};
+    if (typeof originalGetter === 'function') {
+      result.get = function (this: unknown) {
         logGetDeprecationNotice(propertyName);
         return originalGetter.call(this);
-      },
-      set(this: unknown, val: unknown) {
+      };
+    }
+
+    if (typeof originalSetter === 'function') {
+      result.set = function (this: unknown, val: unknown) {
         logSetDeprecationNotice(propertyName);
         return originalSetter.call(this, val);
-      },
-    };
+      };
+    }
+
+    return result;
   }
 
   #constructSetterDecorator(
