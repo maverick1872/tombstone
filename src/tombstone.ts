@@ -1,61 +1,50 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: decorators are inherently any
-import { type Meter, metrics } from '@opentelemetry/api';
-import type { Logger } from './tombstone.types.js';
+import { type Counter, type Meter, metrics } from '@opentelemetry/api';
+import type { Logger, TombstoneOptions } from './tombstone.types.js';
 
 type DecoratorContext =
   | ClassDecoratorContext
   | ClassMethodDecoratorContext
   | ClassMemberDecoratorContext;
 
-type DecoratorVersion = 'standard' | 'experimental';
-
-type TombstoneConfiguration = {
-  decoratorVersion?: DecoratorVersion;
-  logger?: Logger;
-  meter?: Meter;
-  /**
-   * Enable or disable all deprecation warnings globally
-   */
-  enableWarnings?: boolean;
-
-  /**
-   * Enable or disable error elevation for expired deprecations
-   */
-  enableErrorElevation?: boolean;
-
-  /**
-   * Enable or disable metrics collection for deprecation tracking
-   */
-  enableMetrics?: boolean;
-};
-
 /**
  * A class providing factory methods to create deprecation decorators
  * for classes, methods, and properties.
  */
 export class Tombstone {
-  // #meter: Meter;
+  #config: TombstoneOptions;
   #logger: Logger;
-  #decoratorVersion: DecoratorVersion;
+  #meter: Meter;
+  #deprecationCounter: Counter;
 
   /**
    * Creates a new Tombstone instance with optional custom logger and meter
    *
-   * @param configuration Configuration options for the Tombstone instance
+   * @param opts Configuration options for the Tombstone instance
    */
-  constructor(configuration: TombstoneConfiguration = {}) {
-    this.#logger = configuration.logger ?? console;
-    this.#decoratorVersion = configuration.decoratorVersion ?? 'standard';
-    this.#logger.log('Tombstone initialized');
-    // this.#meter =
-    //   configuration.meter || metrics.getMeter("@maverick1872/tombstone");
+  constructor(opts: TombstoneOptions = {}) {
+    // Persist configuration values and apply defaults as necessary
+    this.#config = {
+      decoratorVersion: opts.decoratorVersion ?? 'standard',
+      enableMetrics: opts.enableMetrics ?? true,
+      enableDeprecationExpiries: opts.enableDeprecationExpiries ?? false,
+    };
+
+    // Set up logger
+    this.#logger = opts.logger ?? console;
+
+    // Set up OpenTelemetry Meter and instruments
+    this.#meter = opts.meter ?? metrics.getMeter('@maverick1872/tombstone');
+    this.#deprecationCounter = this.#meter.createCounter('tombstones', {
+      description: 'Counts the number of tombstones encountered',
+    });
   }
 
   public Deprecate(): any {
-    if (this.#decoratorVersion === 'standard')
+    if (this.#config.decoratorVersion === 'standard')
       return this.#constructStandardDecorator();
 
-    if (this.#decoratorVersion === 'experimental')
+    if (this.#config.decoratorVersion === 'experimental')
       return this.#constructExperimentalDecorator();
 
     throw new Error('Invalid decorator version specified');
@@ -248,6 +237,7 @@ export class Tombstone {
     this.#logDeprecationNotice(
       `Deprecated method '${methodName.toString()}' was invoked`,
     );
+    this.#deprecationCounter.add(1, { type: 'method' });
   }
 
   #logClassDeprecationNotice(className: string, parentClassName?: string) {
