@@ -35,6 +35,16 @@ class TestClass {
   set internalProperty(val: string) {
     this.#internalProperty = val;
   }
+
+  @tombstone.Deprecate()
+  get getterOnly() {
+    return this.#internalProperty;
+  }
+
+  @tombstone.Deprecate()
+  set setterOnly(val: string) {
+    this.#internalProperty = val;
+  }
 }
 
 describe('Tombstone', () => {
@@ -104,5 +114,22 @@ describe('Tombstone', () => {
     expect(warnMessages[0]).toStrictEqual({
       args: ["Deprecated property 'internalProperty' was set"],
     });
+  });
+
+  test('Decorating a getter-only property should not incur a side-effect of introducing a setter', () => {
+    const updateReadOnlyValue = () => {
+      // @ts-expect-error Intentionally trying to set a value on a getter-only property
+      testClass.getterOnly = 'new value';
+    };
+
+    expect(updateReadOnlyValue).toThrowErrorMatchingInlineSnapshot(
+      '[TypeError: Cannot set property getterOnly of #<TestClass> which has only a getter]',
+    );
+    expect(warnMessages).toHaveLength(0);
+  });
+
+  test('Decorating a setter-only property should not incur a side-effect of introducing a getter', () => {
+    expect(testClass.setterOnly).toBeUndefined();
+    expect(warnMessages).toHaveLength(0);
   });
 });
