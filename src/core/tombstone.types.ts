@@ -1,19 +1,9 @@
 import type { Meter } from '@opentelemetry/api';
 
 /**
- * Decorator variants supported by Tombstone
- */
-type DecoratorVersion = 'standard' | 'experimental';
-
-/**
  * Options for configuring a Tombstone instance
  */
 export interface TombstoneOptions {
-  /**
-   * Decorator variant to use. Defaults to 'standard' AKA TC39 Stage 3.
-   */
-  decoratorVersion?: DecoratorVersion;
-
   /**
    * A custom logger to use for deprecation warnings.
    *
@@ -57,4 +47,7 @@ export interface DeprecatedOptions {
 /**
  * Logger interface that must be implemented by custom loggers
  */
-export type Logger = Console;
+export type Logger = {
+  warn: (message?: any, ...optionalParams: any[]) => void;
+  error: (message?: any, ...optionalParams: any[]) => void;
+};

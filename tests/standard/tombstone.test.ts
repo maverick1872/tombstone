@@ -1,15 +1,11 @@
+/** biome-ignore-all lint/complexity/useLiteralKeys: Can't use literal keys when the key comes from an index signature */
 import type { Meter } from '@opentelemetry/api';
 import { beforeAll, beforeEach, describe, expect, test } from 'vitest';
-import { Tombstone } from '../../src/tombstone.js';
+import { configureTombstone, Deprecate } from '../../src/standard/tombstone.js';
 import { fakeLogger, resetLogger, warnMessages } from '../fakes/logger.js';
 import { fakeMeter, resetMeterCounters } from '../fakes/meter.js';
 
-const tombstone = new Tombstone({
-  logger: fakeLogger as Console,
-  meter: fakeMeter as Meter,
-});
-
-@tombstone.Deprecate()
+@Deprecate()
 class DeprecatedTestClass {}
 
 class ExtendedClass extends DeprecatedTestClass {}
@@ -17,28 +13,28 @@ class ExtendedClass extends DeprecatedTestClass {}
 class TestClass {
   #internalProperty: string = 'hard private';
 
-  @tombstone.Deprecate()
+  @Deprecate()
   testMethod() {}
 
-  @tombstone.Deprecate()
+  @Deprecate()
   accessor testProperty = 'original value';
 
-  @tombstone.Deprecate()
+  @Deprecate()
   get internalProperty() {
     return this.#internalProperty;
   }
 
-  @tombstone.Deprecate()
+  @Deprecate()
   set internalProperty(val: string) {
     this.#internalProperty = val;
   }
 
-  @tombstone.Deprecate()
+  @Deprecate()
   get getterOnly() {
     return this.#internalProperty;
   }
 
-  @tombstone.Deprecate()
+  @Deprecate()
   set setterOnly(val: string) {
     this.#internalProperty = val;
   }
@@ -47,6 +43,10 @@ class TestClass {
 describe('Tombstone', () => {
   let testClass: TestClass;
   beforeAll(() => {
+    configureTombstone({
+      logger: fakeLogger as Console,
+      meter: fakeMeter as Meter,
+    });
     testClass = new TestClass();
   });
 

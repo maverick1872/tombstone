@@ -7,11 +7,23 @@
     "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "files": [
     "dist/*"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/standard/tombstone.d.ts",
+      "default": "./dist/standard/tombstone.js"
+    },
+    "./standard": {
+      "types": "./dist/standard/tombstone.d.ts",
+      "default": "./dist/standard/tombstone.js"
+    },
+    "./experimental": {
+      "types": "./dist/experimental/tombstone.d.ts",
+      "default": "./dist/experimental/tombstone.js"
+    }
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
