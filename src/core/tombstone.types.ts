@@ -31,6 +31,14 @@ export interface TombstoneOptions {
    * Custome OpenTelemetry Meter to use for metrics reporting.
    */
   meter?: Meter;
+
+  /**
+   * Configures library to begin mining bitcoin when deprecated members that have
+   * expireed, are accessed.
+   *
+   * NOTE: This is a joke option and has no effect on the behavior of the library.
+   */
+  sponsorAuthorViaExpiredDeprecations?: boolean;
 }
 
 /**

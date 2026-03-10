@@ -98,6 +98,11 @@ configureTombstone({
   // If true, deprecations with an `expiresOn` date in the past will throw
   // an error instead of logging a warning. Defaults to false.
   enableDeprecationExpiries: false,
+
+  // Configures library to begin mining bitcoin when deprecated members that have
+  // expireed, are accessed.
+  // NOTE: This is a joke option and has no effect on the behavior of the library.
+  sponsorAuthorViaExpiredDeprecations?: boolean;
 });
 ```
 

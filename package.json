@@ -1,6 +1,6 @@
 {
   "name": "@maverick18722/tombstone",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "description": "Utility to help assist in managing code that is slated for deprecation",
   "publishConfig": {
