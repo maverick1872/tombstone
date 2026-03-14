@@ -29,6 +29,7 @@
     "test:watch": "vitest",
     "lint": "biome lint --write",
     "format": "biome format --write",
+    "prepare": "git config core.hooksPath .githooks",
     "prepack": "rm -rf dist/ && tsc --project tsconfig.build.json",
     "build": "rm -rf dist/ && tsc"
   },
