@@ -1,0 +1,18 @@
+#!/bin/sh
+
+. "$(dirname "$0")/common.sh"
+
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$CURRENT_BRANCH" != "$DEFAULT_BRANCH" ]; then
+  exit 0
+fi
+
+separator
+info "Running commit-msg git hook"
+
+info "Enforcing conventional commit specification"
+separator
+npx --no -- commitlint --edit "$1"
+
+success "Commit-msg git hook complete"

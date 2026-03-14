@@ -1,0 +1,23 @@
+#!/bin/sh
+
+. "$(dirname "$0")/common.sh"
+
+# Get list of staged .ts files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$STAGED_FILES" ]; then
+  exit 0
+fi
+
+separator
+info "Running pre-commit git hook on staged files"
+
+# Run biome check on staged files
+info "Linting & formatting staged files with Biome"
+separator
+npx biome check --write --staged --no-errors-on-unmatched
+
+# Re-stage any files biome modified
+echo "$STAGED_FILES" | xargs git add 
+
+success "Pre-commit git hook complete"
