@@ -10,6 +10,10 @@ on:
         type: boolean
         default: false
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   release:
     name: Semantic Release${{ inputs.dry_run && ' (Dry Run)' || '' }}
