@@ -1,0 +1,50 @@
+name: CI
+
+run-name: "CI — ${{ github.ref_name }}@${{ github.sha }}"
+
+on:
+  push:
+    branches: ['develop']
+    paths:
+      - '.github/workflows/ci.yaml'
+      - 'src/**'
+      - 'tests/**'
+      - 'package*.json'
+      - 'tsconfig.*'
+      - 'vitest.config.ts'
+      - '.nvmrc'
+  pull_request:
+    types: [opened, edited, synchronize, ready_for_review]
+    paths:
+      - '.github/workflows/ci.yaml'
+      - 'src/**'
+      - 'tests/**'
+      - 'package*.json'
+      - 'tsconfig.*'
+      - 'vitest.config.ts'
+      - '.nvmrc'
+
+jobs:
+  quality:
+    name: Quality Checks
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
