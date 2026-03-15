@@ -1,21 +1,17 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: decorators are inherently any
-import { type Meter, metrics } from '@opentelemetry/api';
-import type { TombstoneOptions } from './tombstone.types.js';
+import { metrics } from '@opentelemetry/api';
+import type {
+  TombstoneConfiguration,
+  TombstoneOptions,
+} from './tombstone.types.js';
 import type {
   DeprecationAttributes,
   DeprecationCounter,
 } from './tombstone-metrics.types.js';
 
-type ResolvedConfig = Required<
-  Pick<
-    TombstoneOptions,
-    'logger' | 'enableMetrics' | 'enableDeprecationExpiries'
-  >
-> & { meter: Meter };
-
 let counter: DeprecationCounter | undefined;
 
-let config: ResolvedConfig = {
+let config: TombstoneConfiguration = {
   logger: console,
   meter: metrics.getMeter('@maverick1872/tombstone'),
   enableMetrics: true,
@@ -44,7 +40,7 @@ export function configure(opts: TombstoneOptions): void {
  * Module internal function to retrieve the current configuration.
  * This can be used by other functions within the module to access configuration options such as the logger and meter.
  */
-export function getConfig(): ResolvedConfig {
+export function getConfig(): TombstoneConfiguration {
   return config;
 }
 
@@ -125,7 +121,7 @@ export function constructClassDecorator(
   target: any,
   _context?: ClassDecoratorContext,
 ) {
-  return class extends target {
+  const Subclass = class extends target {
     constructor(...args: unknown[]) {
       super(...args);
       // In some transpilation scenarios the subclass may have an empty name ('')
@@ -146,12 +142,17 @@ export function constructClassDecorator(
       recordClassInstantiationDeprecationNotice(subclassName, parentClass);
     }
   };
+
+  // Preserve the original name and prototype chain
+  Object.defineProperty(Subclass, 'name', { value: target.name });
+
+  return Subclass;
 }
 
-export function constructMethodDecorator(
-  target: any,
+export function constructMethodDecorator<T>(
+  target: (this: unknown, ...args: unknown[]) => T,
   context: Pick<ClassMethodDecoratorContext, 'name'>,
-) {
+): (this: unknown, ...args: unknown[]) => T {
   const methodName = context.name.toString();
   initializeCounter(getDeprecationCounter(), {
     type: ['method'],
@@ -159,16 +160,16 @@ export function constructMethodDecorator(
     expired: [false, true],
   });
 
-  return function (this: unknown, ...args: unknown[]) {
+  return function (this: unknown, ...args: unknown[]): T {
     recordMethodInvocationDeprecationNotice(methodName);
     return target.call(this, ...args);
   };
 }
 
-export function constructAccessorDecorator(
-  target: ClassAccessorDecoratorTarget<unknown, unknown>,
+export function constructAccessorDecorator<T>(
+  target: ClassAccessorDecoratorTarget<unknown, T>,
   context: Pick<ClassAccessorDecoratorContext, 'name'>,
-) {
+): Partial<ClassAccessorDecoratorTarget<unknown, T>> {
   const originalGetter = target.get;
   const originalSetter = target.set;
   const propertyName = context.name.toString();
@@ -180,7 +181,7 @@ export function constructAccessorDecorator(
     expired: [false, true],
   });
 
-  const result: Partial<ClassAccessorDecoratorTarget<unknown, unknown>> = {};
+  const result: Partial<ClassAccessorDecoratorTarget<unknown, T>> = {};
   if (typeof originalGetter === 'function') {
     result.get = function (this: unknown) {
       recordPropertyReadDeprecationNotice(propertyName);
@@ -189,7 +190,7 @@ export function constructAccessorDecorator(
   }
 
   if (typeof originalSetter === 'function') {
-    result.set = function (this: unknown, val: unknown) {
+    result.set = function (this: unknown, val: T) {
       recordPropertyWriteDeprecationNotice(propertyName);
       return originalSetter.call(this, val);
     };
@@ -198,10 +199,10 @@ export function constructAccessorDecorator(
   return result;
 }
 
-export function constructSetterDecorator(
-  target: any,
+export function constructSetterDecorator<T>(
+  target: (this: unknown, val: T) => void,
   context: Pick<ClassSetterDecoratorContext, 'name'>,
-) {
+): (this: unknown, val: T) => void {
   const propertyName = context.name.toString();
 
   initializeCounter(getDeprecationCounter(), {
@@ -211,18 +212,17 @@ export function constructSetterDecorator(
     expired: [false, true],
   });
 
-  return function (this: unknown, ...args: unknown[]) {
+  return function (this: unknown, val: T): unknown {
     recordPropertyWriteDeprecationNotice(propertyName);
-    return target.call(this, ...args);
+    return target.call(this, val);
   };
 }
 
-export function constructGetterDecorator(
-  target: any,
+export function constructGetterDecorator<T>(
+  target: (this: unknown) => T,
   context: Pick<ClassGetterDecoratorContext, 'name'>,
-) {
+): (this: unknown) => T {
   const propertyName = context.name.toString();
-
   initializeCounter(getDeprecationCounter(), {
     type: ['field'],
     member: [propertyName],
@@ -230,12 +230,11 @@ export function constructGetterDecorator(
     expired: [false, true],
   });
 
-  return function (this: unknown, ...args: unknown[]) {
+  return function (this: unknown): T {
     recordPropertyReadDeprecationNotice(propertyName);
-    return target.call(this, ...args);
+    return target.call(this);
   };
 }
-
 export function recordPropertyReadDeprecationNotice(
   propertyName: string | symbol,
 ) {

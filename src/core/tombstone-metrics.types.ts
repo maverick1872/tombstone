@@ -1,7 +1,7 @@
 import type { Counter } from '@opentelemetry/api';
 
-type MemberType = 'class' | 'method' | 'field';
-type OperationType = 'read' | 'write';
+export type MemberType = 'class' | 'method' | 'field';
+export type OperationType = 'read' | 'write';
 
 export type DeprecationAttributes = {
   type: MemberType;
