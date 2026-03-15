@@ -64,6 +64,11 @@ function getDeprecationCounter(): DeprecationCounter {
   return counter;
 }
 
+/**
+ * Initializes the deprecation counter with all combinations of the provided labels to 0. This ensures that
+ * the counter is aware of all possible label values and can accurately track metrics for each
+ * combination.
+ */
 function initializeCounter(
   counter: DeprecationCounter,
   labels: {
@@ -90,6 +95,30 @@ function initializeCounter(
  */
 function logDeprecationNotice(message: string) {
   getConfig().logger.warn(message);
+}
+
+/**
+ * Provides a HOF factory that can be used to decorate any arbitrary function call. When invoked, the function
+ * will log a deprecation notice and increment the appropriate counter metric, then invoke the provided
+ * function. This is useful for cases where the standard class/method/property decorators are not applicable,
+ * such as standalone functions or non-class-based APIs.
+ */
+export function withDeprecation<T extends (...args: unknown[]) => unknown>(
+  fn: T,
+): T {
+  const wrappedFnName = fn.name || 'anonymous';
+  initializeCounter(getDeprecationCounter(), {
+    type: ['method'],
+    member: [wrappedFnName],
+    expired: [false, true],
+  });
+
+  const wrappedFn = (...args: unknown[]) => {
+    recordMethodInvocationDeprecationNotice(wrappedFnName);
+    return fn(...args);
+  };
+
+  return wrappedFn as T;
 }
 
 export function constructClassDecorator(

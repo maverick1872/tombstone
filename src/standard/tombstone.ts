@@ -7,7 +7,10 @@ import {
   getConfig,
 } from '../core/tombstone.js';
 
-export { configure as configureTombstone } from '../core/tombstone.js';
+export {
+  configure as configureTombstone,
+  withDeprecation,
+} from '../core/tombstone.js';
 
 export function Deprecate(): any {
   return (target: any, context?: DecoratorContext): any => {
