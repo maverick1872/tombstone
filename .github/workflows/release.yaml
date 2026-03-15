@@ -1,6 +1,6 @@
 name: Release
 
-run-name: "Release — triggered by @${{ github.actor }}"
+run-name: "Release${{ inputs.dry_run && ' (Dry Run)' || '' }} — triggered by @${{ github.actor }}"
 
 on:
   workflow_dispatch:
