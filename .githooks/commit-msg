@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 . "$(dirname "$0")/common.sh"
 
@@ -11,8 +12,7 @@ fi
 separator
 info "Running commit-msg git hook"
 
-info "Enforcing conventional commit specification"
-separator
-npx --no -- commitlint --edit "$1"
+run_step "Enforcing conventional commit specification" \
+  npx --no -- commitlint --edit "$1"
 
 success "Commit-msg git hook complete"

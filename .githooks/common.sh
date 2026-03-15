@@ -21,3 +21,15 @@ success() { printf "${GREEN}✔ ${BOLD}%s${RESET}\n" "$1"; }
 warn()    { printf "${YELLOW}⚠ ${BOLD}%s${RESET}\n" "$1"; }
 error()   { printf "${RED}✖ ${BOLD}%s${RESET}\n" "$1"; }
 separator()   { printf "\n"; }
+
+run_step() {
+  description="$1"
+  shift
+  info "$description"
+  if "$@"; then
+    success "$description complete"
+  else
+    error "$description failed"
+    exit 1
+  fi
+}

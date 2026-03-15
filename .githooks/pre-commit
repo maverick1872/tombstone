@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 . "$(dirname "$0")/common.sh"
 
@@ -13,9 +14,8 @@ separator
 info "Running pre-commit git hook on staged files"
 
 # Run biome check on staged files
-info "Linting & formatting staged files with Biome"
-separator
-npx biome check --write --staged --no-errors-on-unmatched
+run_step "Linting & formatting staged files with Biome" \
+  npx biome check --write --staged --no-errors-on-unmatched
 
 # Re-stage any files biome modified
 echo "$STAGED_FILES" | xargs git add 
