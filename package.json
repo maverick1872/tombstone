@@ -5,8 +5,27 @@
   "description": "Utility to help assist in managing code that is slated for deprecation",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maverick1872/tombstone.git"
+  },
+  "keywords": [
+    "deprecation",
+    "observability",
+    "monitoring",
+    "maintenance",
+    "opentelemetry",
+    "telemetry"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/maverick1872/tombstone/issues"
+  },
+  "homepage": "https://github.com/maverick1872/tombstone#readme",
   "files": [
     "dist/*"
   ],
@@ -33,24 +52,9 @@
     "prepack": "rm -rf dist/ && tsc --project tsconfig.build.json",
     "build": "rm -rf dist/ && tsc"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/maverick1872/tombstone.git"
+  "peerDependencies": {
+    "@opentelemetry/api": "^1.4.0"
   },
-  "keywords": [
-    "deprecation",
-    "observability",
-    "monitoring",
-    "maintenance",
-    "opentelemetry",
-    "telemetry"
-  ],
-  "author": "",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/maverick1872/tombstone/issues"
-  },
-  "homepage": "https://github.com/maverick1872/tombstone#readme",
   "devDependencies": {
     "@biomejs/biome": "^2.2.2",
     "@commitlint/cli": "^20.4.4",
@@ -60,8 +64,5 @@
     "@vitest/ui": "^3.2.4",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
-  },
-  "peerDependencies": {
-    "@opentelemetry/api": "^1.4.0"
   }
 }
