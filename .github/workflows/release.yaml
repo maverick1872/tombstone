@@ -1,0 +1,44 @@
+name: Release
+
+run-name: "Release — triggered by @${{ github.actor }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run semantic-release in dry run mode (no release will be published)'
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    name: Semantic Release${{ inputs.dry_run && ' (Dry Run)' || '' }}
+    runs-on: ubuntu-latest
+    environment: NPM
+    permissions:
+      contents: write  # to be able to publish a GitHub release
+      issues: write  # to be able to comment on released issues
+      pull-requests: write  # to be able to comment on released pull requests
+      id-token: write  # to enable use of OIDC for trusted publishing and npm provenance
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # semantic-release needs full git history
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Verify signatures
+        run: npm audit signatures
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release${{ inputs.dry_run && ' --dry-run' || '' }}
