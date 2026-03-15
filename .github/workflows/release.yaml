@@ -9,11 +9,6 @@ on:
         description: 'Run semantic-release in dry run mode (no release will be published)'
         type: boolean
         default: false
-      git_ref:
-        description: 'Git ref to run release from'
-        type: string
-        default: 'develop'
-        required: false
 
 concurrency:
   group: ${{ github.workflow }}
@@ -35,7 +30,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ inputs.git_ref || '' }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
