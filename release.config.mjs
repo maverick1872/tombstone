@@ -1,7 +1,7 @@
 export default {
   branches: [
     'develop',
-    { name: 'rc-*' }, // release candidates
+    { name: 'rc-*', prerelease: true }, // release candidates
   ],
   plugins: [
     [
