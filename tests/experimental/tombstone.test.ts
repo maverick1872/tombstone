@@ -71,6 +71,14 @@ describe('Tombstone', () => {
           args: ["Deprecated class of 'DeprecatedTestClass' was instantiated."],
         });
         expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+        expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+          value: 1,
+          attributes: {
+            type: 'class',
+            member: 'DeprecatedTestClass',
+            expired: false,
+          },
+        });
       });
 
       test('Constructing a class that extends a deprecated class should log a deprecation warning', () => {
@@ -83,6 +91,14 @@ describe('Tombstone', () => {
           ],
         });
         expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+        expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+          value: 1,
+          attributes: {
+            type: 'class',
+            member: 'ExtendedClass',
+            expired: false,
+          },
+        });
       });
     });
 
@@ -95,6 +111,14 @@ describe('Tombstone', () => {
           args: ["Deprecated method 'testMethod' was invoked"],
         });
         expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+        expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+          value: 1,
+          attributes: {
+            type: 'method',
+            member: 'testMethod',
+            expired: false,
+          },
+        });
       });
     });
 
@@ -107,6 +131,15 @@ describe('Tombstone', () => {
           args: ["Deprecated property 'testProperty' was accessed"],
         });
         expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+        expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+          value: 1,
+          attributes: {
+            type: 'field',
+            member: 'testProperty',
+            operation: 'read',
+            expired: false,
+          },
+        });
       });
 
       test('Setting the deprecated accessor property should log a deprecation warning', () => {
@@ -117,6 +150,15 @@ describe('Tombstone', () => {
           args: ["Deprecated property 'testProperty' was set"],
         });
         expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+        expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+          value: 1,
+          attributes: {
+            type: 'field',
+            member: 'testProperty',
+            operation: 'write',
+            expired: false,
+          },
+        });
       });
 
       test('Invoking the deprecated getter method should log a deprecation warning', () => {
@@ -126,6 +168,15 @@ describe('Tombstone', () => {
           args: ["Deprecated property 'internalProperty' was accessed"],
         });
         expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+        expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+          value: 1,
+          attributes: {
+            type: 'field',
+            member: 'internalProperty',
+            operation: 'read',
+            expired: false,
+          },
+        });
       });
 
       test('Invoking the deprecated setter method should log a deprecation warning', () => {
@@ -136,6 +187,15 @@ describe('Tombstone', () => {
           args: ["Deprecated property 'internalProperty' was set"],
         });
         expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+        expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+          value: 1,
+          attributes: {
+            type: 'field',
+            member: 'internalProperty',
+            operation: 'write',
+            expired: false,
+          },
+        });
       });
 
       test('Decorating a getter-only property should not incur a side-effect of introducing a setter', () => {
@@ -174,6 +234,34 @@ describe('Tombstone', () => {
         args: ["Deprecated method 'simpleFunction' was invoked"],
       });
       expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+      expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+        value: 1,
+        attributes: {
+          type: 'method',
+          member: 'simpleFunction',
+          expired: false,
+        },
+      });
+    });
+  });
+
+  test('Invoking the decorated anonymous function should log a deprecation warning', () => {
+    const deprecatedFunction = withDeprecation(() => 'Hello world!');
+
+    expect(deprecatedFunction()).toBe('Hello world!');
+
+    expect(warnMessages).toHaveLength(1);
+    expect(warnMessages[0]).toStrictEqual({
+      args: ["Deprecated method 'anonymous' was invoked"],
+    });
+    expect(fakeMeter.counters['tombstones']!.total).toBe(1);
+    expect(fakeMeter.counters['tombstones']!.operations.pop()).toEqual({
+      value: 1,
+      attributes: {
+        type: 'method',
+        member: 'anonymous',
+        expired: false,
+      },
     });
   });
 });

@@ -8,7 +8,7 @@ interface CounterState {
 
 interface CounterOperation {
   value: number;
-  labels: Record<string, unknown>;
+  attributes: Record<string, unknown>;
 }
 
 export interface FakeMeter extends Partial<Meter> {
@@ -32,7 +32,7 @@ export const fakeMeter: FakeMeter = {
           : value;
         counterState.operations.push({
           value,
-          labels: attributes || {},
+          attributes: attributes || {},
         });
       },
     } as Counter;
