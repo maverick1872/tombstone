@@ -42,6 +42,15 @@ export interface TombstoneOptions {
 }
 
 /**
+ * This type represents the resolved configuration options for the Tombstone module, where all
+ * optional properties have been made required (except for 'sponsorAuthorViaExpiredDeprecations'
+ * which is intentionally omitted).
+ */
+export type TombstoneConfiguration = Required<
+  Omit<TombstoneOptions, 'sponsorAuthorViaExpiredDeprecations'>
+>;
+
+/**
  * Options for customizing behavior of a specific deprecated decorator
  */
 export interface DeprecatedOptions {
@@ -56,6 +65,6 @@ export interface DeprecatedOptions {
  * Logger interface that must be implemented by custom loggers
  */
 export type Logger = {
-  warn: (message?: any, ...optionalParams: any[]) => void;
-  error: (message?: any, ...optionalParams: any[]) => void;
+  warn: (message?: unknown, ...optionalParams: unknown[]) => void;
+  error: (message?: unknown, ...optionalParams: unknown[]) => void;
 };
