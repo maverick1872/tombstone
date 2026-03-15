@@ -1,6 +1,6 @@
 export default {
   branches: [
-    { name: 'develop', channel: 'stable' },
+    'develop',
     { name: 'rc-*' }, // release candidates
   ],
   plugins: [
