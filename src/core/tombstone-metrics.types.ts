@@ -1,13 +1,13 @@
 import type { Counter } from '@opentelemetry/api';
 
-export type MemberType = 'class' | 'method' | 'field';
-export type OperationType = 'read' | 'write';
+type MemberType = 'class' | 'method' | 'field';
+type OperationType = 'read' | 'write';
 
-export type DeprecationAttributes = {
+export type DeprecationCounterAttributes = {
   type: MemberType;
   member: string;
   expired: boolean;
   operation?: OperationType;
 };
 
-export type DeprecationCounter = Counter<DeprecationAttributes>;
+export type DeprecationCounter = Counter<DeprecationCounterAttributes>;

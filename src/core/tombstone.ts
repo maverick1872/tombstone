@@ -5,8 +5,8 @@ import type {
   TombstoneOptions,
 } from './tombstone.types.js';
 import type {
-  DeprecationAttributes,
   DeprecationCounter,
+  DeprecationCounterAttributes,
 } from './tombstone-metrics.types.js';
 
 let counter: DeprecationCounter | undefined;
@@ -68,11 +68,15 @@ function getDeprecationCounter(): DeprecationCounter {
 function initializeCounter(
   counter: DeprecationCounter,
   labels: {
-    [K in keyof DeprecationAttributes]: Array<DeprecationAttributes[K]>;
+    [K in keyof DeprecationCounterAttributes]: Array<
+      DeprecationCounterAttributes[K]
+    >;
   },
 ): void {
-  const keys = Object.keys(labels) as Array<keyof DeprecationAttributes>;
-  const combinations = keys.reduce<Array<Partial<DeprecationAttributes>>>(
+  const keys = Object.keys(labels) as Array<keyof DeprecationCounterAttributes>;
+  const combinations = keys.reduce<
+    Array<Partial<DeprecationCounterAttributes>>
+  >(
     (acc, key) =>
       acc.flatMap((combo) =>
         // @ts-expect-error - TypeScript is confused by the dynamic nature of this combination logic
@@ -82,7 +86,7 @@ function initializeCounter(
   );
 
   for (const combo of combinations) {
-    counter.add(0, combo as DeprecationAttributes);
+    counter.add(0, combo as DeprecationCounterAttributes);
   }
 }
 
