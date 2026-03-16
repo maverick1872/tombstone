@@ -6,13 +6,14 @@ import {
   constructSetterDecorator,
   getConfig,
 } from '../core/tombstone.js';
+import type { DeprecationOptions } from '../core/tombstone.types.js';
 
 export {
   configure as configureTombstone,
   withDeprecation,
 } from '../core/tombstone.js';
 
-export function Deprecate(): any {
+export function Deprecate(_?: DeprecationOptions): any {
   return (target: any, context?: DecoratorContext): any => {
     switch (context?.kind) {
       case 'class':

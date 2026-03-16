@@ -53,7 +53,7 @@ export type TombstoneConfiguration = Required<
 /**
  * Options for customizing behavior of a specific deprecated decorator
  */
-export interface DeprecatedOptions {
+export interface DeprecationOptions {
   /**
    * Date when the deprecation will be elevated from a warning to an error
    * If not provided, the deprecation will always be a warning
