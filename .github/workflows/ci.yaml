@@ -1,6 +1,6 @@
 name: CI
 
-run-name: "CI — ${{ github.ref_name }}@${{ github.sha }}"
+run-name: "${{ github.event_name == 'pull_request' && 'PR Quality Checks' || 'Continous Integration' }}"
 
 on:
   push:
